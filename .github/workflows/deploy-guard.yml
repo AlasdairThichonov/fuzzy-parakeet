@@ -1,0 +1,29 @@
+name: deploy-guard
+
+on:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: pip install -e .[dev]
+      - name: Scan
+        run: |
+          mkdir -p artifacts
+          deploy-guard scan --path . --format both --output artifacts/report.json --no-llm || true
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-guard-report
+          path: artifacts/report.json
+      - name: Job summary
+        run: cat artifacts/report.md >> $GITHUB_STEP_SUMMARY

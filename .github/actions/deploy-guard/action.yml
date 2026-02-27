@@ -1,0 +1,18 @@
+name: deploy-guard
+description: Composite action for deploy-guard scan
+inputs:
+  path:
+    required: false
+    default: "."
+  risk-threshold:
+    required: false
+    default: "70"
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: pip install -e .[dev]
+    - shell: bash
+      run: |
+        mkdir -p artifacts
+        deploy-guard scan --path "${{ inputs.path }}" --format both --output artifacts/report.json --risk-threshold "${{ inputs.risk-threshold }}" --no-llm
